@@ -1,6 +1,7 @@
 import argparse
 import json
 from collections import defaultdict
+from functools import lru_cache
 from itertools import combinations
 
 from models import *
@@ -11,18 +12,19 @@ def get_soup_from_filename(filename: str)-> SBSoup:
         return SBSoup(json.load(f))
 
 
+@lru_cache(4)
 class SBBackupFile:
     def __init__(self, filename: str):
         self.filename = filename
         self.soup = get_soup_from_filename(filename)
 
     def is_redundant_wrt(self, other):
-        assert isinstance(other, SBBackupFile)
+        assert isinstance(other, self.__class__)
         return self.soup.sessions_hash_set.issubset(
             other.soup.sessions_hash_set)
 
     def similarity(self, other):
-        assert isinstance(other, SBBackupFile)
+        assert isinstance(other, self.__class__)
         return set_similarity(
             self.soup.sessions_hash_set,
             other.soup.sessions_hash_set)
@@ -51,6 +53,7 @@ def main():
         metavar='FILES',
         nargs='+',
         help="input files")
+    parser.add_argument('-d', '--debug', action='store_true', default=False, help="Enable debug mode")
     args = parser.parse_args()
 
     # redundancy table
@@ -69,7 +72,11 @@ def main():
                 print(
                     f'Similarity between {f1.filename} and {f2.filename} is {similarity:.2f}')
 
-    print(f"Found {len(table)} redundancy relation{'s' if len(table) > 1 else ''}")
+    print(
+        f"Found {len(table)} redundancy relation{'s' if len(table) > 1 else ''}")
+
+    if args.debug:
+        print(SBBackupFile.cache_info())
 
 
 if __name__ == '__main__':
