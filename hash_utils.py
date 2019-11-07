@@ -3,13 +3,6 @@ from typing import Hashable, List
 sentinel = object()
 
 
-def hasattrs(obj, names: List[str])->bool:
-    for name in names:
-        if not hasattr(obj, name):
-            return False
-    return True
-
-
 def hashablize_list(l: list)->tuple:
     """
     This function provides a one-to-one mapping from a list instance
@@ -57,29 +50,3 @@ def hashablize_dict(d: dict)->tuple:
         else:
             raise ValueError(f"Cannot hashablize unsupported type {type(v)}")
     return tuple(tmp)
-
-
-# def hashable(obj):
-#     # Note that it's actually a sanity check. We need one more criteria
-#     # to confirm hashability, that is, two equal objects should yield
-#     # the same hash value.
-#     return hasattrs(obj, ['__hash__', '__eq__'])
-
-
-# def hashable_sanity_check(obj)->bool:
-#     """
-#     Compared to test by try hash(obj) and see if there will be exception,
-#     this method is not guarantee that the (hence the name sanity check) but faster.
-#     """
-#     if isinstance(obj, [int, str, bool, type(None)]):
-#         return True
-#     return hasattrs(obj, ['__hash__', '__eq__'])
-
-
-# def hashable(obj):
-#     try:
-#         hash(obj)
-#     except:
-#         return False
-#     else:
-#         return True
