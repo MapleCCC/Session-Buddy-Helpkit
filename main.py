@@ -64,8 +64,10 @@ def main():
         elif f2.is_redundant_wrt(f1):
             table[f2].append(f1)
         else:
-            print(
-                f'Similarity between {f1.filename} and {f2.filename} is {f1.similarity(f2)}')
+            similarity = f1.similarity(f2)
+            if similarity > 0:
+                print(
+                    f'Similarity between {f1.filename} and {f2.filename} is {similarity:.2f}')
 
     print(f"Found {len(table)} redundancy relations")
 
