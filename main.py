@@ -69,7 +69,7 @@ def main():
                 print(
                     f'Similarity between {f1.filename} and {f2.filename} is {similarity:.2f}')
 
-    print(f"Found {len(table)} redundancy relations")
+    print(f"Found {len(table)} redundancy relation{'s' if len(table) > 1 else ''}")
 
 
 if __name__ == '__main__':
