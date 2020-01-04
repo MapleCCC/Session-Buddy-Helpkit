@@ -1,7 +1,7 @@
 from hash_utils import hashablize_dict
 
 
-class DictProxy(object):
+class DictProxy:
     """A sementic and readonly dict-type object wrapper"""
 
     def __init__(self, dic: dict):
