@@ -26,15 +26,25 @@ def get_soup_from_filename(filename: str) -> SBSoup:
 
 @lru_cache(4)
 class SBBackupFile:
-    def __init__(self, filename: str):
+    def __init__(self, filename: str) -> None:
         self.filename = filename
         self.soup = get_soup_from_filename(filename)
 
-    def is_redundant_wrt(self, other):
+    # TODO: type annotation for the "other" argument is not available for now.
+    # Until self type reference is supported by Python officially.
+    def is_redundant_wrt(self, other) -> bool:
+        # use self.__class__ instead of SBBackupFile so that
+        # the type check works correctly even when our class is wrapped
+        # by functools.lru_cache
         assert isinstance(other, self.__class__)
         return self.soup.sessions_hash_set.issubset(other.soup.sessions_hash_set)
 
-    def similarity(self, other):
+    # TODO: type annotation for the "other" argument is not available for now.
+    # Until self type reference is supported by Python officially.
+    def similarity(self, other) -> float:
+        # use self.__class__ instead of SBBackupFile so that
+        # the type check works correctly even when our class is wrapped
+        # by functools.lru_cache
         assert isinstance(other, self.__class__)
         return set_similarity(self.soup.sessions_hash_set, other.soup.sessions_hash_set)
 
