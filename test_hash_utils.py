@@ -1,19 +1,16 @@
 from hash_utils import *
+from hypothesis import given
+from hypothesis.strategies import *
+from typing import *
 
 
-def test_hashablize_list():
-    assert hashablize_list([]) == hashablize_list([])
-    assert hash(hashablize_list([])) == hash(hashablize_list([]))
-    assert hashablize_list([1]) == hashablize_list([1])
-    assert hash(hash(hashablize_list([1]))) == hash(hashablize_list([1]))
-    assert hashablize_list([1, 2]) == hashablize_list([1, 2])
-    assert hash(hashablize_list([1, 2])) == hash(hashablize_list([1, 2]))
+@given(lists(integers()))
+def test_hashablize_list(l: List[int]) -> None:
+    assert hashablize_list(l) == hashablize_list(l)
+    assert hash(hashablize_list(l)) == hash(hashablize_list(l))
 
 
-def test_hashablize_dict():
-    assert hashablize_dict({}) == hashablize_dict({})
-    assert hash(hashablize_dict({})) == hash(hashablize_dict({}))
-    assert hashablize_dict({1: 10}) == hashablize_dict({1: 10})
-    assert hash(hashablize_dict({1: 10})) == hash(hashablize_dict({1: 10}))
-    assert hashablize_dict({1: 10, 2: 20}) == hashablize_dict({1: 10, 2: 20})
-    assert hash(hashablize_dict({1: 10, 2: 20})) == hash(hashablize_dict({1: 10, 2: 20}))
+@given(dictionaries(integers(), integers()))
+def test_hashablize_dict(d: Dict[int, int]) -> None:
+    assert hashablize_dict(d) == hashablize_dict(d)
+    assert hash(hashablize_dict(d)) == hash(hashablize_dict(d))
