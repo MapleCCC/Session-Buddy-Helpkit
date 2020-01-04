@@ -1,12 +1,12 @@
-from typing import Hashable, List
+from typing import Hashable, List, Tuple, Dict
 
 sentinel = object()
 
 
-def hashablize_list(l: list)->tuple:
+def hashablize_list(l: List) -> Tuple:
     """
     This function provides a one-to-one mapping from a list instance
-    to a tuple. The mapped tuple is guaranteed to contain only hashable
+    to a tuple instance. The mapped tuple is guaranteed to contain only hashable
     elements, hence the tuple itself becomes hashable.
 
     Highly likely no two different lists are mapped to a same tuple.
@@ -23,15 +23,14 @@ def hashablize_list(l: list)->tuple:
         elif isinstance(item, dict):
             tmp.append(hashablize_dict(item))
         else:
-            raise ValueError(
-                f"Cannot hashablize unsupported type {type(item)}")
+            raise ValueError(f"Cannot hashablize unsupported type {type(item)}")
     return tuple(tmp)
 
 
-def hashablize_dict(d: dict)->tuple:
+def hashablize_dict(d: Dict) -> Tuple:
     """
     This function provides a one-to-one mapping from a dict instance
-    to a tuple. The mapped tuple is guaranteed to contain only hashable
+    to a tuple instance. The mapped tuple is guaranteed to contain only hashable
     elements, hence the tuple itself becomes hashable.
 
     Highly likely no two different dicts are mapped to a same tuple.
