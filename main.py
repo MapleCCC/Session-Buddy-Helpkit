@@ -31,14 +31,11 @@ class SBBackupFile:
 
     def is_redundant_wrt(self, other):
         assert isinstance(other, self.__class__)
-        return self.soup.sessions_hash_set.issubset(
-            other.soup.sessions_hash_set)
+        return self.soup.sessions_hash_set.issubset(other.soup.sessions_hash_set)
 
     def similarity(self, other):
         assert isinstance(other, self.__class__)
-        return set_similarity(
-            self.soup.sessions_hash_set,
-            other.soup.sessions_hash_set)
+        return set_similarity(self.soup.sessions_hash_set, other.soup.sessions_hash_set)
 
 
 def compare_set(s1: set, s2: set):
@@ -59,12 +56,10 @@ def set_similarity(s1: set, s2: set):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("files", metavar="FILES", nargs="+", help="input files")
     parser.add_argument(
-        'files',
-        metavar='FILES',
-        nargs='+',
-        help="input files")
-    parser.add_argument('-d', '--debug', action='store_true', default=False, help="Enable debug mode")
+        "-d", "--debug", action="store_true", default=False, help="Enable debug mode"
+    )
     args = parser.parse_args()
 
     # redundancy table
@@ -81,14 +76,14 @@ def main():
             similarity = f1.similarity(f2)
             if similarity > 0:
                 print(
-                    f'Similarity between {f1.filename} and {f2.filename} is {similarity:.2f}')
+                    f"Similarity between {f1.filename} and {f2.filename} is {similarity:.2f}"
+                )
 
-    print(
-        f"Found {len(table)} redundancy relation{'s' if len(table) > 1 else ''}")
+    print(f"Found {len(table)} redundancy relation{'s' if len(table) > 1 else ''}")
 
     if args.debug:
         print(SBBackupFile.cache_info())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
