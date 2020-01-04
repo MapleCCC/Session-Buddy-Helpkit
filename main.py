@@ -3,13 +3,24 @@ import json
 from collections import defaultdict
 from functools import lru_cache
 from itertools import combinations
+from json import JSONDecodeError
 
 from models import *
 
 
-def get_soup_from_filename(filename: str)-> SBSoup:
-    with open(filename, encoding='utf-8-sig') as f:
-        return SBSoup(json.load(f))
+def get_soup_from_filename(filename: str) -> SBSoup:
+    try:
+        # use utf-8-sig instead of utf-8 based on the observation
+        # that session buddy backup/export file usually have default
+        # `UTF-8 with BOM` encoding. I don't know whether this is due to
+        # extension intention or due to my develop environment.
+        # But using utf-8-sig is always safer choice and yield better robustness.
+        with open(filename, encoding="utf-8-sig") as f:
+            return SBSoup(json.load(f))
+    except JSONDecodeError:
+        raise RuntimeError(f"Error decoding JSON file: {filename}")
+    except:
+        raise RuntimeError(f"Error parsing JSON file: {filename}")
 
 
 @lru_cache(4)
