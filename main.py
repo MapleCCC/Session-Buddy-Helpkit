@@ -1,7 +1,7 @@
 import argparse
+import functools
 import json
 from collections import defaultdict
-from functools import lru_cache
 from itertools import combinations
 from json import JSONDecodeError
 from set_utils import compare_set, set_similarity
@@ -24,7 +24,7 @@ def get_soup_from_filename(filename: str) -> SBSoup:
         raise RuntimeError(f"Error parsing JSON file: {filename}")
 
 
-@lru_cache(4)
+# @functools.lru_cache(maxsize=8)
 class SBBackupFile:
     def __init__(self, filename: str) -> None:
         self.filename = filename
@@ -60,9 +60,15 @@ def main():
     # redundancy table
     table = defaultdict(list)
 
+    # since SBBackupFile initialization involves loading a large file into memory and
+    # expensive json parsing, for space efficiency, we would like to cache its
+    # instance to improve performance.
+    SBBackupFile_cached = functools.lru_cache(maxsize=8)(SBBackupFile)
+    # cache maxsize can be easily tuned with the observation that
+    
     for filename1, filename2 in combinations(args.files, 2):
-        f1 = SBBackupFile(filename1)
-        f2 = SBBackupFile(filename2)
+        f1 = SBBackupFile_cached(filename1)
+        f2 = SBBackupFile_cached(filename2)
         if f1.is_redundant_wrt(f2):
             table[f1].append(f2)
         elif f2.is_redundant_wrt(f1):
@@ -77,7 +83,7 @@ def main():
     print(f"Found {len(table)} redundancy relation{'s' if len(table) > 1 else ''}")
 
     if args.debug:
-        print(SBBackupFile.cache_info())
+        print(SBBackupFile_cached.cache_info())
 
 
 if __name__ == "__main__":
