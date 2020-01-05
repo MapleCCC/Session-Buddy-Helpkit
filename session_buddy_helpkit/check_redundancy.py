@@ -15,7 +15,11 @@ Digest = namedtuple("Digest", ["filename", "fingerprint"])
 def load_json_from_file(filepath: str) -> Dict:
     try:
         with open(filepath, "r", encoding="utf-8-sig") as f:
-            return json.load(f)
+            rbuf = f.read()
+            # strip the BOM head if the format is "UTF-8 with BOM"
+            if rbuf.startswith("\ufeff"):
+                rbuf = rbuf.encode("utf-8")[3:].decode("utf-8")
+            return json.loads(rbuf)
     except JSONDecodeError:
         raise RuntimeError(f"Error decoding JSON file: {filepath}")
     except:
