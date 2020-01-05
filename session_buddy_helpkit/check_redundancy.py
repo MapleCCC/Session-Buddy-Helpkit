@@ -69,10 +69,10 @@ def check_redundancy_imperative_style(filepaths: List[str]) -> None:
     print(f"Scanned {len(filepaths)} files")
     print(f"{len(sinks)} of them are sinks")
     print(
-        f"{digests_extraction_end_time - digests_extraction_begin_time} spent on digests extreaction"
+        f"{(digests_extraction_end_time - digests_extraction_begin_time):.2f} seconds spent on digests extreaction"
     )
     print(
-        f"{sinks_calculation_end_time - sinks_calculation_begin_time} spent on sinks calculation"
+        f"{(sinks_calculation_end_time - sinks_calculation_begin_time):.2f} seconds spent on sinks calculation"
     )
     # for sink in sinks:
     #     print(sink.filename)
