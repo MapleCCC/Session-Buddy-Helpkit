@@ -1,8 +1,8 @@
 import json
 from json import JSONDecodeError
 
-from models import *
-from set_utils import compare_set, set_similarity
+from .models import SBSoup
+from .utils.set_utils import compare_set, set_similarity
 
 
 def get_soup_from_filename(filename: str) -> SBSoup:
