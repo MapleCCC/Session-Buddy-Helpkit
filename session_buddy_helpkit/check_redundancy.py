@@ -26,15 +26,10 @@ def load_json_from_file(filepath: str) -> Dict:
         raise RuntimeError(f"Error parsing JSON file: {filepath}")
 
 
-def extract_digests(filepaths: List[str], report: Dict[str, List[str]]) -> List[Digest]:
+def extract_digests(filepaths: List[str]) -> List[Digest]:
     digests = []
     for filepath in filepaths:
-        report["scanned"].append(filepath)
-        try:
-            json_obj = load_json_from_file(filepath)
-        except Exception:
-            report["unparsed"].append(filepath)
-            continue
+        json_obj = load_json_from_file(filepath)
         sessions = json_obj["sessions"]
         fingerprint = frozenset(hash(hashablize_dict(session)) for session in sessions)
         digests.append(
@@ -56,16 +51,12 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
 
 
 def check_redundancy_imperative_style(filepaths: List[str]) -> None:
-    report = {"scanned": [], "unparsed": [], "sinks": []}
-
-    digests = extract_digests(filepaths, report)
+    digests = extract_digests(filepaths)
     digests.sort(key=lambda digest: len(digest.fingerprint))
     sinks = calculate_sinks(digests)
 
     print(f"Scanned {len(filepaths)} files")
-    print(f"{len(report['unparsed'])} unparsed")
     print(f"{len(sinks)} of them are sinks")
-    # print(report)
     # for sink in sinks:
     #     print(sink.filename)
 
