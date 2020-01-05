@@ -87,3 +87,6 @@ def check_redundancy_functional_style(filepaths: List[str]) -> None:
     print(f"{len(sinks)} of them are sinks")
     # for sink in sinks:
     #     print(sink.filename)
+
+
+check_redundancy = check_redundancy_imperative_style
