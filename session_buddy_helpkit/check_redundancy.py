@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from collections import namedtuple
 from functools import reduce
 from itertools import filterfalse
@@ -51,12 +52,28 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
 
 
 def check_redundancy_imperative_style(filepaths: List[str]) -> None:
+    print("Begin to extract digests...")
+    digests_extraction_begin_time = time.time()
     digests = extract_digests(filepaths)
+    digests_extraction_end_time = time.time()
+    print("Complete extraction of digests")
+
     digests.sort(key=lambda digest: len(digest.fingerprint))
+
+    print("Begin to calculate sinks")
+    sinks_calculation_begin_time = time.time()
     sinks = calculate_sinks(digests)
+    sinks_calculation_end_time = time.time()
+    print("Complete calculating sinks")
 
     print(f"Scanned {len(filepaths)} files")
     print(f"{len(sinks)} of them are sinks")
+    print(
+        f"{digests_extraction_end_time - digests_extraction_begin_time} spent on digests extreaction"
+    )
+    print(
+        f"{sinks_calculation_end_time - sinks_calculation_begin_time} spent on sinks calculation"
+    )
     # for sink in sinks:
     #     print(sink.filename)
 
