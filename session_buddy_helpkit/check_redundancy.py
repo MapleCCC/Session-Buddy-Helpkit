@@ -3,6 +3,7 @@ import os
 from collections import namedtuple
 from functools import reduce
 from itertools import filterfalse
+from json import JSONDecodeError
 from typing import *
 
 from .utils.hash_utils import hashablize_dict
@@ -12,8 +13,13 @@ Digest = namedtuple("Digest", ["filename", "fingerprint"])
 
 
 def load_json_from_file(filepath: str) -> Dict:
-    with open(filepath, "r", encoding="utf-8-sig") as f:
-        return json.load(f)
+    try:
+        with open(filepath, "r", encoding="utf-8-sig") as f:
+            return json.load(f)
+    except JSONDecodeError:
+        raise RuntimeError(f"Error decoding JSON file: {filepath}")
+    except:
+        raise RuntimeError(f"Error parsing JSON file: {filepath}")
 
 
 def extract_digests(filepaths: List[str], report: Dict[str, List[str]]) -> List[Digest]:
