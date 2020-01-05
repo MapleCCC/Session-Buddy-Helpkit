@@ -33,8 +33,8 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
     for digest in digests:
         new = []
         for sink in sinks:
-            if sink[1].issubset(digest[1]):
-                sinks.remove(sink)
+            if not sink.fingerprint.issubset(digest.fingerprint):
+                new.append(sink)
         new.append(digest)
         sinks = new
     return sinks
