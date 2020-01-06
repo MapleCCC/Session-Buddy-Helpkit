@@ -48,7 +48,7 @@ def hashablize_dict(d: Dict) -> Tuple:
     """
     tmp = []
     tmp.append(dict_begin_sentinel)
-    for k, v in d.items():
+    for k, v in sorted(d.items()):
         if isinstance(v, Hashable):
             tmp += [k, v]
         elif isinstance(v, list):
