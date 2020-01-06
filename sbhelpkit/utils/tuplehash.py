@@ -60,5 +60,32 @@ def hash_tuple_from_stream_of_tuple_elements(elements: Iterable) -> int:
     return Py_hash_t(acc.value).value
 
 
+class TupleHasher:
+    def __init__(self, length: int) -> None:
+        self.acc = Py_uhash_t(0x345678)
+        self.mult = Py_uhash_t(0xF4243)
+        self.counter = 0
+        self.len = Py_ssize_t(length)
+
+    def update(self, data) -> None:
+        try:
+            h = Py_hash_t(hash(data))
+        except TypeError:
+            raise TypeError("Unhashable tuple")
+        self.acc.value = (self.acc.value ^ h.value) * self.mult.value
+        self.mult.value += Py_hash_t(
+            82520 + self.len.value + self.len.value - 2 * self.counter - 2
+        ).value
+        self.counter += 1
+
+    def digest(self) -> int:
+        # TODO: will modification to acc affect self.acc?
+        acc = self.acc
+        acc.value += 97531
+        if acc.value == Py_uhash_t(-1).value:
+            acc.value = -2
+        return Py_hash_t(acc.value).value
+
+
 if __name__ == "__main__":
     hash_tuple((0,))
