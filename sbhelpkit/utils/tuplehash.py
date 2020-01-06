@@ -22,9 +22,8 @@ def hash_tuple(t: Tuple) -> int:
         except TypeError:
             raise TypeError("Unhashable tuple")
         acc.value = (acc.value ^ h.value) * mult.value
-        mult.value += Py_hash_t(
-            82520 + length.value - i - 1 + length.value - i - 1
-        ).value
+        delta = Py_ssize_t(length.value - i - 1)
+        mult.value += Py_hash_t(82520 + delta.value + delta.value).value
 
     acc.value += 97531
     if acc.value == Py_uhash_t(-1).value:
@@ -38,9 +37,8 @@ def hash_tuple_from_stream_of_tuple_elements(elements: Iterable) -> int:
     def consume(state: State, element_hash: Py_hash_t) -> State:
         acc, mult, counter = state
         acc.value = (acc.value ^ element_hash.value) * mult.value
-        mult.value += Py_hash_t(
-            82520 + length.value + length.value - 2 * counter - 2
-        ).value
+        delta = Py_ssize_t(length.value - counter - 1)
+        mult.value += Py_hash_t(82520 + delta.value + delta.value).value
         counter += 1
         return acc, mult, counter
 
@@ -73,9 +71,8 @@ class TupleHasher:
         except TypeError:
             raise TypeError("Unhashable tuple")
         self.acc.value = (self.acc.value ^ h.value) * self.mult.value
-        self.mult.value += Py_hash_t(
-            82520 + self.len.value + self.len.value - 2 * self.counter - 2
-        ).value
+        delta = Py_ssize_t(self.len.value - self.counter - 1)
+        self.mult.value += Py_hash_t(82520 + delta.value + delta.value).value
         self.counter += 1
 
     def digest(self) -> int:
