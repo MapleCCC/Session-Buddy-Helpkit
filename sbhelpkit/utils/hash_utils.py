@@ -1,8 +1,14 @@
 from typing import Hashable, List, Tuple, Dict
 
-sentinel = object()
+
+list_begin_sentinel = object()
+list_end_sentinel = object()
+dict_begin_sentinel = object()
+dict_end_sentinel = object()
 
 
+# TODO: Do we want to have no two different lists mapping to a same tuple,
+# or do we want to have no two different objects mapping to a same tuple.
 def hashablize_list(l: List) -> Tuple:
     """
     This function provides a one-to-one mapping from a list instance
@@ -15,6 +21,7 @@ def hashablize_list(l: List) -> Tuple:
     If the mapping cannot be found for some lists, a ValueError will be raised.
     """
     tmp = []
+    tmp.append(list_begin_sentinel)
     for item in l:
         if isinstance(item, Hashable):
             tmp.append(item)
@@ -24,6 +31,7 @@ def hashablize_list(l: List) -> Tuple:
             tmp.append(hashablize_dict(item))
         else:
             raise ValueError(f"Cannot hashablize unsupported type {type(item)}")
+    tmp.append(list_end_sentinel)
     return tuple(tmp)
 
 
@@ -39,13 +47,15 @@ def hashablize_dict(d: Dict) -> Tuple:
     If the mapping cannot be found for some dicts, a ValueError will be raised.
     """
     tmp = []
+    tmp.append(dict_begin_sentinel)
     for k, v in d.items():
         if isinstance(v, Hashable):
-            tmp += [k, v, sentinel]
+            tmp += [k, v]
         elif isinstance(v, list):
-            tmp += [k, hashablize_list(v), sentinel]
+            tmp += [k, hashablize_list(v)]
         elif isinstance(v, dict):
-            tmp += [k, hashablize_dict(v), sentinel]
+            tmp += [k, hashablize_dict(v)]
         else:
             raise ValueError(f"Cannot hashablize unsupported type {type(v)}")
+    tmp.append(dict_end_sentinel)
     return tuple(tmp)
