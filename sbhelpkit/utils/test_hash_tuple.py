@@ -10,3 +10,9 @@ from tuplehash import *
 def test_hash_tuple_compliance(l: List[int]) -> None:
     t = tuple(l)
     assert hash_tuple(t) == hash(t)
+
+
+@given(lists(integers()))
+def test_hash_tuple_from_stream_of_tuple_elements(l: List) -> None:
+    t = tuple(l)
+    assert hash_tuple_from_stream_of_tuple_elements(t) == hash(t)

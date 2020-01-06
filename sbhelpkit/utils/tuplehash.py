@@ -32,5 +32,33 @@ def hash_tuple(t: Tuple) -> int:
     return Py_hash_t(acc.value).value
 
 
+def hash_tuple_from_stream_of_tuple_elements(elements: Iterable) -> int:
+    def consume(
+        state: Tuple[Py_uhash_t, Py_uhash_t, int], element_hash: Py_hash_t
+    ) -> Tuple[Py_uhash_t, Py_uhash_t, int]:
+        acc, mult, counter = state
+        acc.value = (acc.value ^ element_hash.value) * mult.value
+        mult.value += Py_hash_t(
+            82520 + length.value + length.value - 2 * counter - 2
+        ).value
+        counter += 1
+        return acc, mult, counter
+
+    try:
+        element_hashes = [Py_hash_t(hash(e)) for e in elements]
+    except TypeError:
+        raise TypeError("Unhashable tuple")
+
+    length = Py_ssize_t(len(element_hashes))
+    initial_state = (Py_uhash_t(0x345678), Py_uhash_t(0xF4243), 0)
+
+    acc, _, _ = reduce(consume, element_hashes, initial_state)
+
+    acc.value += 97531
+    if acc.value == Py_uhash_t(-1).value:
+        acc.value = -2
+    return Py_hash_t(acc.value).value
+
+
 if __name__ == "__main__":
     hash_tuple((0,))
