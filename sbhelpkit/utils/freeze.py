@@ -1,5 +1,6 @@
 from typing import Hashable, List, Tuple, Dict
 
+__all__ = ["freeze_dict", "freeze_list"]
 
 list_begin_sentinel = object()
 list_end_sentinel = object()
@@ -46,6 +47,7 @@ def freeze_dict(d: Dict) -> Tuple:
 
     If the mapping cannot be found for some dicts, a ValueError will be raised.
     """
+    # Another implementation is to freeze dict.items as frozenset.
     tmp = []
     tmp.append(dict_begin_sentinel)
     for k, v in sorted(d.items()):

@@ -3,7 +3,7 @@ from typing import *
 from hypothesis import given, assume
 from hypothesis.strategies import *
 
-from freeze import *
+from .freeze import *
 
 
 @given(lists(integers()))
