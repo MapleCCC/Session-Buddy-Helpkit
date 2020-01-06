@@ -3,7 +3,12 @@ from ctypes import *
 from functools import reduce
 from typing import *
 
-__all__ = ["hash_tuple", "hash_tuple_from_stream_of_tuple_elements", "TupleHasher"]
+__all__ = [
+    "hash_tuple",
+    "hash_tuple_from_stream_of_tuple_elements",
+    "hash_tuple_from_hashes_of_elements",
+    "TupleHasher",
+]
 
 # Reference: https://github.com/python/cpython/blob/4171b8e41165daadb034867eae61e05f8d2bc9c0/Include/pyport.h#L91
 Py_hash_t = c_ssize_t
@@ -35,20 +40,24 @@ def hash_tuple(t: Tuple) -> int:
 
 
 def hash_tuple_from_stream_of_tuple_elements(elements: Iterable) -> int:
+    try:
+        element_hashes = [hash(e) for e in elements]
+    except TypeError:
+        raise TypeError("Unhashable tuple")
+
+    return hash_tuple_from_hashes_of_elements(element_hashes)
+
+
+def hash_tuple_from_hashes_of_elements(element_hashes: List[int]) -> int:
     State = namedtuple("State", ["acc", "mult", "counter"])
 
-    def consume(state: State, element_hash: Py_hash_t) -> State:
+    def consume(state: State, element_hash: int) -> State:
         acc, mult, counter = state
-        acc.value = (acc.value ^ element_hash.value) * mult.value
+        acc.value = (acc.value ^ Py_hash_t(element_hash).value) * mult.value
         delta = Py_ssize_t(length.value - counter - 1)
         mult.value += Py_hash_t(82520 + delta.value + delta.value).value
         counter += 1
         return acc, mult, counter
-
-    try:
-        element_hashes = [Py_hash_t(hash(e)) for e in elements]
-    except TypeError:
-        raise TypeError("Unhashable tuple")
 
     length = Py_ssize_t(len(element_hashes))
     initial_state = State(acc=Py_uhash_t(0x345678), mult=Py_uhash_t(0xF4243), counter=0)
