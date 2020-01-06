@@ -9,7 +9,7 @@ dict_end_sentinel = object()
 
 # TODO: Do we want to have no two different lists mapping to a same tuple,
 # or do we want to have no two different objects mapping to a same tuple.
-def hashablize_list(l: List) -> Tuple:
+def freeze_list(l: List) -> Tuple:
     """
     This function provides a one-to-one mapping from a list instance
     to a tuple instance. The mapped tuple is guaranteed to contain only hashable
@@ -26,16 +26,16 @@ def hashablize_list(l: List) -> Tuple:
         if isinstance(item, Hashable):
             tmp.append(item)
         elif isinstance(item, list):
-            tmp.append(hashablize_list(item))
+            tmp.append(freeze_list(item))
         elif isinstance(item, dict):
-            tmp.append(hashablize_dict(item))
+            tmp.append(freeze_dict(item))
         else:
             raise ValueError(f"Cannot hashablize unsupported type {type(item)}")
     tmp.append(list_end_sentinel)
     return tuple(tmp)
 
 
-def hashablize_dict(d: Dict) -> Tuple:
+def freeze_dict(d: Dict) -> Tuple:
     """
     This function provides a one-to-one mapping from a dict instance
     to a tuple instance. The mapped tuple is guaranteed to contain only hashable
@@ -52,9 +52,9 @@ def hashablize_dict(d: Dict) -> Tuple:
         if isinstance(v, Hashable):
             tmp += [k, v]
         elif isinstance(v, list):
-            tmp += [k, hashablize_list(v)]
+            tmp += [k, freeze_list(v)]
         elif isinstance(v, dict):
-            tmp += [k, hashablize_dict(v)]
+            tmp += [k, freeze_dict(v)]
         else:
             raise ValueError(f"Cannot hashablize unsupported type {type(v)}")
     tmp.append(dict_end_sentinel)
