@@ -5,6 +5,8 @@ from hypothesis.strategies import *
 
 from tuplehash import *
 
+# TODO: try testing on tuple with heterogeneous typed elements.
+
 
 @given(lists(integers()))
 def test_hash_tuple_compliance(l: List[int]) -> None:
