@@ -3,10 +3,11 @@ import os
 import time
 from collections import namedtuple
 from functools import reduce
-from itertools import filterfalse
+from itertools import filterfalse, zip_longest, chain
 from json import JSONDecodeError
 from typing import *
 
+from .utils.extra_typings import *
 from .utils.freeze import freeze_dict
 
 
@@ -49,6 +50,37 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
         new.append(digest)
         sinks = new
     return sinks
+
+def check_redundancy_by_guid(filepaths: List[str]) -> None:
+    print("Start parse")
+    parse_begin_time = time.time()
+    jsonobjs = (load_json_from_file(filepath) for filepath in filepaths)
+    parse_end_time = time.time()
+    print("End parse")
+
+    # def extract_guid_set(jsonobj: JSONObject) -> FrozenSet[str]:
+    def extract_fingerprint(jsonobj) -> FrozenSet[str]:
+        sesses = jsonobj["sessions"]
+        assert sesses[0]["type"] == "current"
+        # return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
+        return frozenset((sess["gid"] for sess in sesses[1:] ))
+
+    print("Start retrieve fingerprint")
+    retrieve_fingerprint_begin_time = time.time()
+    fingerprints = (extract_fingerprint(jsonobj) for jsonobj in jsonobjs)
+    retrieve_fingerprint_end_time = time.time()
+    print("End retrieve fingerprint")
+
+    metas = zip_longest(filepaths, fingerprints)
+    metas = sorted(metas, key=lambda x: x[1])
+
+    def reducer(sinks: Iterable[Tuple[str, FrozenSet]], meta: Tuple[str, FrozenSet]) -> Iterable[Tuple[str, FrozenSet]]:
+        return chain([meta], filter(lambda x: not x[1].issubset(meta), sinks))
+
+    sinks = reduce(reducer, metas, [])
+
+    print(f"{len(filepaths)} files scanned")
+    print(f"{len(list(sinks))} sinks found")
 
 
 def check_redundancy_imperative_style(filepaths: List[str]) -> None:
@@ -116,4 +148,4 @@ def check_redundancy_functional_style(filepaths: List[str]) -> None:
     #     print(sink.filename)
 
 
-check_redundancy = check_redundancy_imperative_style
+check_redundancy = check_redundancy_by_guid
