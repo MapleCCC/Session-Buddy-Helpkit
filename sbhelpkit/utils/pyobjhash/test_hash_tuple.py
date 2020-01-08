@@ -16,8 +16,8 @@ def test_hash_tuple_compliance(l: List) -> None:
 
 @given(lists(hashable_types))
 def test_hash_tuple_from_stream_of_tuple_elements(l: List) -> None:
-    itr = iter(tuple(l))
-    assert hash_tuple_from_stream_of_tuple_elements(itr) == hash(itr)
+    t = tuple(l)
+    assert hash_tuple_from_stream_of_tuple_elements(iter(t)) == hash(tuple(t))
 
 
 @given(lists(hashable_types))
