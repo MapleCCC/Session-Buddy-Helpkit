@@ -44,14 +44,12 @@ def hash_tuple(t: Tuple) -> int:
 
 def hash_tuple_from_stream_of_tuple_elements(elements: Iterable) -> int:
     try:
-        element_hashes = [hash(e) for e in elements]
+        return hash_tuple_from_hashes_of_elements(map(hash, elements))
     except TypeError:
         raise TypeError("Unhashable tuple")
 
-    return hash_tuple_from_hashes_of_elements(element_hashes)
 
-
-def hash_tuple_from_hashes_of_elements(element_hashes: List[int]) -> int:
+def hash_tuple_from_hashes_of_elements(element_hashes: Iterable[int]) -> int:
     State = namedtuple("State", ["acc", "mult", "counter"])
 
     def consume(state: State, element_hash: int) -> State:
@@ -62,6 +60,13 @@ def hash_tuple_from_hashes_of_elements(element_hashes: List[int]) -> int:
         counter += 1
         return acc, mult, counter
 
+    # we have to forfeit lazy evaluation at this line, because CPython's tupple
+    # hash algorithm require tuple size to start.
+    # TODO: think of other ways to conquer it.
+    # Perhaps try hash algoirhtms other than xxHash?
+    # Or investigate whether we can alter xxHash to a specialized version that doesn't
+    # require tuple size from the beginning.
+    element_hashes = list(element_hashes)
     length = Py_ssize_t(len(element_hashes))
     initial_state = State(acc=Py_uhash_t(0x345678), mult=Py_uhash_t(0xF4243), counter=0)
 
