@@ -2,7 +2,11 @@ from ctypes import *
 from functools import reduce
 from typing import *
 
-__all__ = ["hash_frozenset", "hash_frozenset_from_elements"]
+__all__ = [
+    "hash_frozenset",
+    "hash_frozenset_from_elements",
+    "hash_frozenset_from_hashes_of_elements",
+]
 
 Py_ssize_t = c_ssize_t
 
@@ -18,6 +22,10 @@ def hash_frozenset(fs: FrozenSet) -> int:
 
 
 def hash_frozenset_from_elements(elements: Iterable) -> int:
+    return hash_frozenset_from_hashes_of_elements(map(hash, elements))
+
+
+def hash_frozenset_from_hashes_of_elements(hashes: Iterable[int]) -> int:
     def _shuffule_bits(h: Py_uhash_t) -> Py_uhash_t:
         # For increase the bit dispersion for closely spaced hash values.
         # Reference: https://github.com/python/cpython/blob/v3.7.0/Objects/setobject.c#L752
