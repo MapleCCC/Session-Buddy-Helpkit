@@ -3,7 +3,7 @@ import os
 import time
 from collections import namedtuple
 from functools import reduce
-from itertools import filterfalse, zip_longest, chain
+from itertools import filterfalse, zip_longest, chain, starmap
 from json import JSONDecodeError
 from typing import *
 
@@ -68,9 +68,9 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
     jsonobjs = map(load_json_from_file, filepaths)
     fingerprints = map(extract_fingerprint, jsonobjs)
     filenames = map(os.path.basename, filepaths)
-    metas = map(Meta, zip_longest(filenames, fingerprints))
+    metas = starmap(Meta, zip_longest(filenames, fingerprints))
     metas = sorted(metas, key=lambda x: len(x.fingerprint))
-    sinks = reduce(reducer, metas)
+    sinks = reduce(reducer, metas, [])
 
     print(f"{len(filepaths)} files scanned")
     print(f"{len(list(sinks))} sinks found")
