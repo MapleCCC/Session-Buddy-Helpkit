@@ -53,22 +53,26 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
 
 
 def check_redundancy_by_guid(filepaths: List[str]) -> None:
+    Meta = namedtuple("Meta", ("filename", "fingerprint"))
+
     def extract_fingerprint(jsonobj: JSONObject) -> FrozenSet[str]:
         sesses = jsonobj["sessions"]
         assert sesses[0]["type"] == "current"
         # return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
         return frozenset((sess["gid"] for sess in sesses[1:]))
 
-    def reducer(
-        sinks: Iterable[Tuple[str, FrozenSet]], meta: Tuple[str, FrozenSet]
-    ) -> Iterable[Tuple[str, FrozenSet]]:
-        return chain([meta], filter(lambda x: not x[1].issubset(meta), sinks))
+    def reducer(sinks: Iterable[Meta], meta: Meta) -> Iterable[Meta]:
+        return chain(
+            [meta],
+            filter(lambda x: not x.fingerprint.issubset(meta.fingerprint), sinks),
+        )
 
-    jsonobjs = (load_json_from_file(filepath) for filepath in filepaths)
-    fingerprints = (extract_fingerprint(jsonobj) for jsonobj in jsonobjs)
-    metas = zip_longest(filepaths, fingerprints)
-    metas = sorted(metas, key=lambda x: x[1])
-    sinks = reduce(reducer, metas, [])
+    jsonobjs = map(load_json_from_file, filepaths)
+    fingerprints = map(extract_fingerprint, jsonobjs)
+    filenames = map(os.path.basename, filepaths)
+    metas = map(Meta, zip_longest(filenames, fingerprints))
+    metas = sorted(metas, key=lambda x: len(x.fingerprint))
+    sinks = reduce(reducer, metas)
 
     print(f"{len(filepaths)} files scanned")
     print(f"{len(list(sinks))} sinks found")
