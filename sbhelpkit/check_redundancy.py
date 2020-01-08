@@ -54,8 +54,7 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
 def check_redundancy_by_guid(filepaths: List[str]) -> None:
     jsonobjs = (load_json_from_file(filepath) for filepath in filepaths)
 
-    # def extract_guid_set(jsonobj: JSONObject) -> FrozenSet[str]:
-    def extract_fingerprint(jsonobj) -> FrozenSet[str]:
+    def extract_fingerprint(jsonobj: JSONObject) -> FrozenSet[str]:
         sesses = jsonobj["sessions"]
         assert sesses[0]["type"] == "current"
         # return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
