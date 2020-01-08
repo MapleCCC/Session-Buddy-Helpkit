@@ -57,9 +57,7 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
 
     def extract_fingerprint(jsonobj: JSONObject) -> FrozenSet[str]:
         sesses = jsonobj["sessions"]
-        assert sesses[0]["type"] == "current"
-        # return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
-        return frozenset((sess["gid"] for sess in sesses[1:]))
+        return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
 
     def reducer(sinks: Iterable[Meta], meta: Meta) -> Iterable[Meta]:
         return chain(
