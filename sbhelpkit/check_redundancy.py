@@ -1,9 +1,9 @@
+import itertools
 import json
 import os
 import time
 from collections import namedtuple
 from functools import reduce
-from itertools import filterfalse, zip_longest, chain, starmap
 from json import JSONDecodeError
 from typing import *
 
@@ -60,7 +60,7 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
         return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
 
     def reducer(sinks: Iterable[Meta], meta: Meta) -> Iterable[Meta]:
-        return chain(
+        return itertools.chain(
             (meta,),
             filter(lambda x: not x.fingerprint.issubset(meta.fingerprint), sinks),
         )
@@ -68,7 +68,7 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
     jsonobjs = map(load_json_from_file, filepaths)
     fingerprints = map(extract_fingerprint, jsonobjs)
     filenames = map(os.path.basename, filepaths)
-    metas = starmap(Meta, zip_longest(filenames, fingerprints))
+    metas = itertools.starmap(Meta, zip(filenames, fingerprints))
     metas = sorted(metas, key=lambda x: len(x.fingerprint))
     sinks = reduce(reducer, metas, [])
 
@@ -119,7 +119,7 @@ def check_redundancy_functional_style(filepaths: List[str]) -> None:
 
     def calculate_sinks(sinks: List[Digest], digest: Digest) -> List[Digest]:
         return list(
-            filterfalse(
+            itertools.filterfalse(
                 lambda sink: sink.fingerprint.issubset(digest.fingerprint), sinks
             )
         ) + [digest]
