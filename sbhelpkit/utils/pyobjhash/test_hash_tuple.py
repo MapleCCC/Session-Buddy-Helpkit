@@ -3,7 +3,7 @@ from typing import *
 from hypothesis import given
 from hypothesis.strategies import *
 
-from .tuplehash import *
+from .hash_tuple import *
 
 # TODO: try testing on tuple with heterogeneous typed elements.
 
