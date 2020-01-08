@@ -10,6 +10,11 @@ from typing import *
 from .utils.extra_typings import *
 from .utils.freeze import freeze_dict
 
+try:
+    profile
+except NameError:
+    profile = lambda f: f
+
 
 Digest = namedtuple("Digest", ["filename", "fingerprint"])
 
@@ -52,6 +57,7 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
     return sinks
 
 
+@profile  # type: ignore  # https://github.com/rkern/line_profiler
 def check_redundancy_by_guid(filepaths: List[str]) -> None:
     Fingerprint = FrozenSet[str]
     Meta = NamedTuple("Meta", [("filename", str), ("fingerprint", Fingerprint)])
@@ -105,6 +111,7 @@ def check_redundancy_imperative_style(filepaths: List[str]) -> None:
 
 
 # TODO: what's the best practice on exception handling in functional programming
+@profile  # type: ignore
 def check_redundancy_functional_style(filepaths: List[str]) -> None:
     Meta = NamedTuple("Digest", [("filename", str), ("fingerprint", frozenset)])
 

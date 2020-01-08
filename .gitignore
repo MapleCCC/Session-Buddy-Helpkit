@@ -127,3 +127,6 @@ dmypy.json
 temp.py
 temp_*.py
 temp/
+
+# line_profiler and kernprof output files
+*.lprof
