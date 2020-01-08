@@ -31,7 +31,7 @@ def freeze_list(l: List) -> Tuple:
         elif isinstance(item, dict):
             tmp.append(freeze_dict(item))
         else:
-            raise ValueError(f"Cannot hashablize unsupported type {type(item)}")
+            raise ValueError(f"Cannot freeze unsupported type {type(item)}")
     tmp.append(list_end_sentinel)
     return tuple(tmp)
 
@@ -47,7 +47,7 @@ def freeze_dict(d: Dict) -> Tuple:
 
     If the mapping cannot be found for some dicts, a ValueError will be raised.
     """
-    # Another implementation is to freeze dict.items as frozenset.
+    # Another possible implementation is to recursively freeze dict.items as frozenset.
     tmp = []
     tmp.append(dict_begin_sentinel)
     for k, v in sorted(d.items()):
@@ -58,6 +58,6 @@ def freeze_dict(d: Dict) -> Tuple:
         elif isinstance(v, dict):
             tmp += [k, freeze_dict(v)]
         else:
-            raise ValueError(f"Cannot hashablize unsupported type {type(v)}")
+            raise ValueError(f"Cannot freeze unsupported type {type(v)}")
     tmp.append(dict_end_sentinel)
     return tuple(tmp)

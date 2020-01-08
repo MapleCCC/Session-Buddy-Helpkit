@@ -1,6 +1,6 @@
 from typing import *
 
-from .utils.hash_utils import hashablize_dict
+from .utils.freeze import freeze_dict
 
 __all__ = ["SBSoup", "Session", "Window", "Tab"]
 
@@ -17,7 +17,7 @@ class DictProxy:
         return self._dic[key]
 
     def __hash__(self) -> int:
-        return hash(hashablize_dict(self._dic))
+        return hash(freeze_dict(self._dic))
 
     # TODO: type annotation for the "other" argument is not available for now.
     # Until self type reference is supported by Python officially.

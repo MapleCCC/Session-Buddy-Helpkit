@@ -7,7 +7,7 @@ from itertools import filterfalse
 from json import JSONDecodeError
 from typing import *
 
-from .utils.hash_utils import hashablize_dict
+from .utils.freeze import freeze_dict
 
 
 Digest = namedtuple("Digest", ["filename", "fingerprint"])
@@ -90,7 +90,7 @@ def check_redundancy_functional_style(filepaths: List[str]) -> None:
     def extract_fingerprint(filepath: str) -> FrozenSet[int]:
         json_obj = load_json_from_file(filepath)
         sessions = json_obj["sessions"]
-        return frozenset(hash(hashablize_dict(s)) for s in sessions)
+        return frozenset(hash(freeze_dict(s)) for s in sessions)
 
     def calculate_sinks(sinks: List[Digest], digest: Digest) -> List[Digest]:
         return list(
