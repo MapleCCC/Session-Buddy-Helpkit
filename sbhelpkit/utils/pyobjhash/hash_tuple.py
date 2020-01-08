@@ -10,14 +10,17 @@ __all__ = [
     "TupleHasher",
 ]
 
+Py_ssize_t = c_ssize_t
+
 # Reference: https://github.com/python/cpython/blob/v3.7.0/Include/pyport.h#L91
-Py_hash_t = c_ssize_t
+Py_hash_t = Py_ssize_t
 Py_uhash_t = c_size_t
 
-Py_ssize_t = c_ssize_t
 
 # TODO: try v3.8.0 implementation
 # Porting tuplehash CPython v3.6.0 implementation from C layer to Python layer.
+# ctypes are used to simulate overflow behaviour.
+# Is it possible to simulate the overflow behaviour using mere Pythonic constructs, without using ctypes?
 # Reference: https://github.com/python/cpython/blob/v3.7.0/Objects/tupleobject.c#L348
 def hash_tuple(t: Tuple) -> int:
     acc = Py_uhash_t(0x345678)

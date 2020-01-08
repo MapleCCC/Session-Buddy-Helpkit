@@ -5,23 +5,23 @@ from hypothesis.strategies import *
 
 from .hash_tuple import *
 
-# TODO: try testing on tuple with heterogeneous typed elements.
+hashable_types = none() | booleans() | floats() | text()
 
 
-@given(lists(integers()))
-def test_hash_tuple_compliance(l: List[int]) -> None:
+@given(lists(hashable_types))
+def test_hash_tuple_compliance(l: List) -> None:
     t = tuple(l)
     assert hash_tuple(t) == hash(t)
 
 
-@given(lists(integers()))
+@given(lists(hashable_types))
 def test_hash_tuple_from_stream_of_tuple_elements(l: List) -> None:
-    t = tuple(l)
-    assert hash_tuple_from_stream_of_tuple_elements(t) == hash(t)
+    itr = iter(tuple(l))
+    assert hash_tuple_from_stream_of_tuple_elements(itr) == hash(itr)
 
 
-@given(lists(integers()))
-def test_tuplehasher(l: List[int]) -> None:
+@given(lists(hashable_types))
+def test_tuplehasher(l: List) -> None:
     t = tuple(l)
     th = TupleHasher(len(t))
     for element in t:
