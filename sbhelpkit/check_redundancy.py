@@ -106,40 +106,48 @@ def check_redundancy_imperative_style(filepaths: List[str]) -> None:
 
 # TODO: what's the best practice on exception handling in functional programming
 def check_redundancy_functional_style(filepaths: List[str]) -> None:
-    Digest = namedtuple("Digest", ["filename", "fingerprint"])
+    Meta = NamedTuple("Digest", [("filename", str), ("fingerprint", frozenset)])
 
     def load_json_from_file(filepath: str) -> Dict:
-        # TODO: add handling of exception
-        with open(filepath, "r", encoding="utf-8-sig") as f:
-            return json.load(f)
+        try:
+            with open(filepath, "r", encoding="utf-8-sig") as f:
+                rbuf = f.read()
+                if rbuf.startswith("\uFEFF"):
+                    rbuf = rbuf.encode("utf-8")[3:].decode("utf-8")
+                return json.loads(rbuf)
+        except:
+            raise RuntimeError(f"Error parsing json file: {filepath}")
 
     def extract_fingerprint(filepath: str) -> FrozenSet[int]:
         json_obj = load_json_from_file(filepath)
         sessions = json_obj["sessions"]
-        return frozenset(hash(freeze_dict(s)) for s in sessions)
+        return frozenset(
+            hash(freeze_dict(s)) for s in sessions if s["type"] != "current"
+        )
 
-    def calculate_sinks(sinks: List[Digest], digest: Digest) -> List[Digest]:
-        return list(
+    def calculate_sinks(sinks: Iterable[Meta], meta: Meta) -> Iterable[Meta]:
+        return itertools.chain(
             itertools.filterfalse(
-                lambda sink: sink.fingerprint.issubset(digest.fingerprint), sinks
-            )
-        ) + [digest]
+                lambda sink: sink.fingerprint.issubset(meta.fingerprint), sinks
+            ),
+            [meta],
+        )
 
-    digests = (
-        Digest(
+    metas = (
+        Meta(
             filename=os.path.basename(filepath),
             fingerprint=extract_fingerprint(filepath),
         )
         for filepath in filepaths
     )
 
-    sorted_digests = sorted(digests, key=lambda digest: len(digest.fingerprint))
-    sinks = reduce(calculate_sinks, sorted_digests, [])
+    sorted_metas = sorted(metas, key=lambda meta: len(meta.fingerprint))
+    sinks = reduce(calculate_sinks, sorted_metas, [])
 
     print(f"Scanned {len(filepaths)} files")
-    print(f"{len(sinks)} of them are sinks")
-    # for sink in sinks:
-    #     print(sink.filename)
+    print(f"{len(list(sinks))} of them are sinks")
+    for sink in sinks:
+        print(sink.filename)
 
 
 check_redundancy = check_redundancy_by_guid
