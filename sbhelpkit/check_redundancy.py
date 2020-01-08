@@ -63,7 +63,7 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
 
     def reducer(sinks: Iterable[Meta], meta: Meta) -> Iterable[Meta]:
         return chain(
-            [meta],
+            (meta,),
             filter(lambda x: not x.fingerprint.issubset(meta.fingerprint), sinks),
         )
 
