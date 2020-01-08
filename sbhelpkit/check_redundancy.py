@@ -52,11 +52,7 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
     return sinks
 
 def check_redundancy_by_guid(filepaths: List[str]) -> None:
-    print("Start parse")
-    parse_begin_time = time.time()
     jsonobjs = (load_json_from_file(filepath) for filepath in filepaths)
-    parse_end_time = time.time()
-    print("End parse")
 
     # def extract_guid_set(jsonobj: JSONObject) -> FrozenSet[str]:
     def extract_fingerprint(jsonobj) -> FrozenSet[str]:
@@ -65,11 +61,7 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
         # return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
         return frozenset((sess["gid"] for sess in sesses[1:] ))
 
-    print("Start retrieve fingerprint")
-    retrieve_fingerprint_begin_time = time.time()
     fingerprints = (extract_fingerprint(jsonobj) for jsonobj in jsonobjs)
-    retrieve_fingerprint_end_time = time.time()
-    print("End retrieve fingerprint")
 
     metas = zip_longest(filepaths, fingerprints)
     metas = sorted(metas, key=lambda x: x[1])
