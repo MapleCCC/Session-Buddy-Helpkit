@@ -53,9 +53,10 @@ def calculate_sinks(digests: List[Digest]) -> List[Digest]:
 
 
 def check_redundancy_by_guid(filepaths: List[str]) -> None:
-    Meta = namedtuple("Meta", ("filename", "fingerprint"))
+    Fingerprint = FrozenSet[str]
+    Meta = NamedTuple("Meta", [("filename", str), ("fingerprint", Fingerprint)])
 
-    def extract_fingerprint(jsonobj: JSONObject) -> FrozenSet[str]:
+    def extract_fingerprint(jsonobj: JSONObject) -> Fingerprint:
         sesses = jsonobj["sessions"]
         return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
 
@@ -70,7 +71,7 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
     filenames = map(os.path.basename, filepaths)
     metas = itertools.starmap(Meta, zip(filenames, fingerprints))
     metas = sorted(metas, key=lambda x: len(x.fingerprint))
-    sinks = reduce(reducer, metas, [])
+    sinks: Iterable[Meta] = reduce(reducer, sorted_metas, [])
 
     print(f"{len(filepaths)} files scanned")
     print(f"{len(list(sinks))} sinks found")
