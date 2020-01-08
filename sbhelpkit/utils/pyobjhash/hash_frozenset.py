@@ -4,14 +4,14 @@ from functools import reduce
 import pdb
 
 
-# Reference: https://github.com/python/cpython/blob/4171b8e41165daadb034867eae61e05f8d2bc9c0/Include/pyport.h#L91
+# Reference: https://github.com/python/cpython/blob/v3.7.0/Include/pyport.h#L91
 Py_hash_t = c_ssize_t
 Py_uhash_t = c_size_t
 
 Py_ssize_t = c_ssize_t
 
 
-# Reference: https://github.com/python/cpython/tree/v3.7.0/Objects/setobject.c#L764
+# Reference: https://github.com/python/cpython/blob/v3.7.0/Objects/setobject.c#L764
 # Note that frozenset caches hash value internally. So sometimes it may be faster to just query.
 def hash_frozenset(fs: FrozenSet) -> int:
     return hash_frozenset_from_elements(fs)
@@ -20,7 +20,7 @@ def hash_frozenset(fs: FrozenSet) -> int:
 def hash_frozenset_from_elements(elements: Iterable) -> int:
     def _shuffule_bits(h: Py_uhash_t) -> Py_uhash_t:
         # For increase the bit dispersion for closely spaced hash values.
-        # Reference: https://github.com/python/cpython/blob/676b16c14040ddb9a2ef3408e66a77c1dfb8e841/Objects/setobject.c#L747
+        # Reference: https://github.com/python/cpython/blob/v3.7.0/Objects/setobject.c#L752
         return Py_uhash_t(((h.value ^ 89869747) ^ (h.value << 16)) * 3644798167)
 
     def reducer(state: Tuple[Py_uhash_t, int], y: Py_uhash_t) -> Tuple[Py_uhash_t, int]:

@@ -10,7 +10,7 @@ __all__ = [
     "TupleHasher",
 ]
 
-# Reference: https://github.com/python/cpython/blob/4171b8e41165daadb034867eae61e05f8d2bc9c0/Include/pyport.h#L91
+# Reference: https://github.com/python/cpython/blob/v3.7.0/Include/pyport.h#L91
 Py_hash_t = c_ssize_t
 Py_uhash_t = c_size_t
 
@@ -18,7 +18,7 @@ Py_ssize_t = c_ssize_t
 
 # TODO: try v3.8.0 implementation
 # Porting tuplehash CPython v3.6.0 implementation from C layer to Python layer.
-# Reference: https://github.com/python/cpython/blob/4171b8e41165daadb034867eae61e05f8d2bc9c0/Objects/tupleobject.c#L344
+# Reference: https://github.com/python/cpython/blob/v3.7.0/Objects/tupleobject.c#L348
 def hash_tuple(t: Tuple) -> int:
     acc = Py_uhash_t(0x345678)
     length = Py_ssize_t(len(t))
