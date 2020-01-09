@@ -18,6 +18,16 @@ dict_sentinel = object()
 
 def freeze(item) -> Hashable:
     if isinstance(item, Hashable):
+        # WARNING: A great gotchar here is that passing isinstance(x, Hashable) test
+        # doesn't necessarily imply that hash(x) won't fail.
+        # An example is that some tuples contain elements that are unhashable, despite
+        # they passing isinstance(x, Hashable) test.
+        if isinstance(item, tuple):
+            return freeze_list(item)
+        try:
+            hash(item)
+        except TypeError:
+            raise ValueError(f"Cannot freeze")
         return item
     elif isinstance(item, list):
         return freeze_list(item)
@@ -33,7 +43,16 @@ def ihash(item) -> int:
     It is able to hash a broader range of objects.
     """
     if isinstance(item, Hashable):
-        return hash(item)
+        # WARNING: A great gotchar here is that passing isinstance(x, Hashable) test
+        # doesn't necessarily imply that hash(x) won't fail.
+        # An example is that some tuples contain elements that are unhashable, despite
+        # they passing isinstance(x, Hashable) test.
+        if isinstance(item, tuple):
+            return hash_list(item)
+        try:
+            return hash(item)
+        except TypeError:
+            raise TypeError("Unhashable")
     elif isinstance(item, list):
         return hash_list(item)
     elif isinstance(item, dict):
