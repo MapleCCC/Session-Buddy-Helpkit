@@ -36,7 +36,7 @@ def freeze_list(l: List) -> Tuple:
     return tuple(tmp)
 
 
-def freeze_dict(d: Dict) -> Tuple:
+def freeze_dict(d: Dict) -> FrozenSet:
     """
     This function provides a one-to-one mapping from a dict instance
     to a tuple instance. The mapped tuple is guaranteed to contain only hashable
@@ -47,7 +47,25 @@ def freeze_dict(d: Dict) -> Tuple:
 
     If the mapping cannot be found for some dicts, a ValueError will be raised.
     """
-    # Another possible implementation is to recursively freeze dict.items as frozenset.
+
+    def mapper(item):
+        if isinstance(item, Hashable):
+            return item
+        elif isinstance(item, list):
+            return freeze_list(item)
+        elif isinstance(item, dict):
+            return freeze_dict(item)
+        else:
+            raise ValueError(f"Cannot freeze unsupported type {type(item)}")
+
+    return frozenset(
+        itertools.chain(
+            [dict_begin_sentinel], map(mapper, d.items()), [dict_end_sentinel]
+        )
+    )
+
+
+def freeze_dict_using_tuple_method(d: Dict) -> Tuple:
     tmp = []
     tmp.append(dict_begin_sentinel)
     for k, v in sorted(d.items()):
