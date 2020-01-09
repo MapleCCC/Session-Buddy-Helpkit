@@ -35,25 +35,30 @@ def test_tuplehasher(l: List) -> None:
 # Use global variable to track intermediate information.
 
 collision_count = 0
-total_count = 0
 acceptable_collision_rate_threshold = 0.03
 total_test_case = 500
-min_test_case = 300
+min_distinct_test_case = 300
+seen_test_cases = set()
+
 
 @settings(max_examples=total_test_case)
 @given(lists(hashable_types), lists(hashable_types))
 def test_hash_different_list_low_collision_rate_helper(
     l1: List[Hashable], l2: List[Hashable]
 ) -> None:
-    global collision_count, total_count
-    assume(l1 != l2)
     t1, t2 = tuple(l1), tuple(l2)
+    assume(t1 != t2)
+    assume({t1, t2} not in seen_test_cases)
+    seen_test_cases.add(frozenset({t1, t2}))
+
+    global collision_count
     if hash_tuple(t1) == hash_tuple(t2):
         collision_count += 1
-    total_count += 1
 
 
 @given(just(None))
 def test_hash_different_list_low_collision_rate(_: None) -> None:
-    assert total_count >= min_test_case
-    assert (collision_count / total_count) < acceptable_collision_rate_threshold
+    assert len(seen_test_cases) > min_distinct_test_case
+    assert (
+        collision_count / len(seen_test_cases)
+    ) < acceptable_collision_rate_threshold
