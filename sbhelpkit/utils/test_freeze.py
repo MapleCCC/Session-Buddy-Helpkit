@@ -18,28 +18,32 @@ def test_freeze_list(l: List[Hashable]) -> None:
 
 
 freeze_list_test_collision_count = 0
-freeze_list_test_total_count = 0
 freeze_list_total_test_case = 500
-freeze_list_min_test_case = 300
+freeze_list_min_distinct_test_case = 300
+freeze_list_seen_test_cases= set()
 
 
 @settings(max_examples=freeze_list_total_test_case)
 @given(lists(hashable_types), lists(hashable_types))
 def test_freeze_list_inequality(l1: List[Hashable], l2: List[Hashable]) -> None:
-    global freeze_list_test_collision_count, freeze_list_test_total_count
     assume(l1 != l2)
+    t1, t2 = tuple(l1), tuple(l2)
+    assume({t1, t2} not in freeze_list_seen_test_cases)
+    freeze_list_seen_test_cases.add(frozenset({t1, t2}))
+
     assert freeze_list(l1) != freeze_list(l2)
+
+    global freeze_list_test_collision_count
     if hash(freeze_list(l1)) == hash(freeze_list(l2)):
         freeze_list_test_collision_count += 1
-    freeze_list_test_total_count += 1
 
 
 @settings(max_examples=freeze_list_total_test_case)
 @given(just(None))
 def test_freeze_list_low_collision_rate(_: None) -> None:
-    assert freeze_list_test_total_count > freeze_list_min_test_case
+    assert len(freeze_list_seen_test_cases) > freeze_list_min_distinct_test_case
     assert (
-        freeze_list_test_collision_count / freeze_list_test_total_count
+        freeze_list_test_collision_count / len(freeze_list_seen_test_cases)
     ) < acceptable_collision_rate_threshold
 
 
@@ -49,10 +53,10 @@ def test_freeze_dict(d: Dict[Hashable, Hashable]) -> None:
     assert hash(freeze_dict(d)) == hash(freeze_dict(d))
 
 
-freeze_dict_test_total_count = 0
 freeze_dict_test_collision_count = 0
 freeze_dict_total_test_case = 500
-freeze_dict_min_test_case = 300
+freeze_dict_min_distinct_test_case = 300
+freeze_dict_seen_test_cases = set()
 
 
 @settings(max_examples=freeze_dict_total_test_case)
@@ -63,19 +67,23 @@ freeze_dict_min_test_case = 300
 def test_freeze_dict_inequality(
     d1: Dict[Hashable, Hashable], d2: Dict[Hashable, Hashable]
 ) -> None:
-    global freeze_dict_test_collision_count, freeze_dict_test_total_count
     assume(d1 != d2)
+    s1, s2 = frozenset(d1), frozenset(d2)
+    assume({s1, s2} not in freeze_dict_seen_test_cases)
+    freeze_dict_seen_test_cases.add(frozenset({s1, s2}))
+
     assert freeze_dict(d1) != freeze_dict(d2)
+
+    global freeze_dict_test_collision_count
     if hash(freeze_dict(d1)) == hash(freeze_dict(d2)):
         freeze_dict_test_collision_count += 1
-    freeze_dict_test_total_count += 1
 
 
 @given(just(None))
 def test_freeze_dict_low_collision_rate(_: None) -> None:
-    assert freeze_dict_test_total_count > freeze_dict_min_test_case
+    assert len(freeze_dict_seen_test_cases) > freeze_dict_min_distinct_test_case
     assert (
-        freeze_dict_test_collision_count / freeze_dict_test_total_count
+        freeze_dict_test_collision_count / len(freeze_dict_seen_test_cases)
     ) < acceptable_collision_rate_threshold
 
 
