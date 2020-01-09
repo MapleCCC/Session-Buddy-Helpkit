@@ -1,9 +1,15 @@
+import sys
 from typing import *
 
 from hypothesis import given, assume, settings
 from hypothesis.strategies import *
 
 from .freeze import freeze_list, freeze_dict, hash_list, hash_dict
+
+
+if sys.version_info < (3, 7):
+    raise RuntimeError("Do not run test under v3.7.0. "
+        "We need built-in hash implementation up to v3.7.0 to test against.")
 
 hashable_types = none() | booleans() | floats() | text()
 
