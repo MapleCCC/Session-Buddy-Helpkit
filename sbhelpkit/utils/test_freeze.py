@@ -37,7 +37,6 @@ def test_freeze_list_inequality(l1: List[Hashable], l2: List[Hashable]) -> None:
 @settings(max_examples=freeze_list_total_test_case)
 @given(just(None))
 def test_freeze_list_low_collision_rate(_: None) -> None:
-    global freeze_list_test_collision_count, freeze_list_test_total_count
     assert freeze_list_test_total_count > freeze_list_min_test_case
     assert (
         freeze_list_test_collision_count / freeze_list_test_total_count
@@ -74,7 +73,6 @@ def test_freeze_dict_inequality(
 
 @given(just(None))
 def test_freeze_dict_low_collision_rate(_: None) -> None:
-    global freeze_dict_test_total_count, freeze_dict_test_collision_count
     assert freeze_dict_test_total_count > freeze_dict_min_test_case
     assert (
         freeze_dict_test_collision_count / freeze_dict_test_total_count

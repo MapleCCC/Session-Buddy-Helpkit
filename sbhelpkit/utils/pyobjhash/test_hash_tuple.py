@@ -55,6 +55,5 @@ def test_hash_different_list_low_collision_rate_helper(
 
 @given(just(None))
 def test_hash_different_list_low_collision_rate(_: None) -> None:
-    global collision_count, total_count
     assert total_count >= min_test_case
     assert (collision_count / total_count) < acceptable_collision_rate_threshold
