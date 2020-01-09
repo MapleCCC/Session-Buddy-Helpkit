@@ -14,5 +14,11 @@ def test_hash_frozenset(s: FrozenSet) -> None:
 
 
 @given(frozensets(hashable_types))
-def test_hash_frozenset_of_jsonobjects(s):
-    assert hash_frozenset(s) == hash(s)
+def test_frozensethasher(s: FrozenSet) -> None:
+    sh = FrozenSetHasher()
+    for item in s:
+        sh.update(item)
+    assert sh.digest() == hash(s)
+
+
+# TODO: test on nested frozenset
