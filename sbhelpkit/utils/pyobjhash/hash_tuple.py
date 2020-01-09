@@ -87,10 +87,12 @@ class TupleHasher:
 
     def update(self, data) -> None:
         try:
-            h = Py_hash_t(hash(data))
+            return self.update_by_data_hash(hash(data))
         except TypeError:
             raise TypeError("Unhashable tuple")
-        self.acc.value = (self.acc.value ^ h.value) * self.mult.value
+
+    def update_by_data_hash(self, h: int) -> None:
+        self.acc.value = (self.acc.value ^ Py_hash_t(h).value) * self.mult.value
         delta = Py_ssize_t(self.len.value - self.counter - 1)
         self.mult.value += Py_hash_t(82520 + delta.value + delta.value).value
         self.counter += 1
