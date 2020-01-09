@@ -1,6 +1,6 @@
 from typing import *
 
-from hypothesis import given, assume
+from hypothesis import given, assume, settings
 from hypothesis.strategies import *
 
 from .freeze import freeze_list, freeze_dict, hash_list, hash_dict
@@ -19,8 +19,11 @@ def test_freeze_list(l: List[Hashable]) -> None:
 
 freeze_list_test_collision_count = 0
 freeze_list_test_total_count = 0
+freeze_list_total_test_case = 500
+freeze_list_min_test_case = 300
 
 
+@settings(max_examples=freeze_list_total_test_case)
 @given(lists(hashable_types), lists(hashable_types))
 def test_freeze_list_inequality(l1: List[Hashable], l2: List[Hashable]) -> None:
     global freeze_list_test_collision_count, freeze_list_test_total_count
@@ -31,10 +34,11 @@ def test_freeze_list_inequality(l1: List[Hashable], l2: List[Hashable]) -> None:
     freeze_list_test_total_count += 1
 
 
+@settings(max_examples=freeze_list_total_test_case)
 @given(just(None))
 def test_freeze_list_low_collision_rate(_: None) -> None:
     global freeze_list_test_collision_count, freeze_list_test_total_count
-    assert freeze_list_test_total_count >= 100
+    assert freeze_list_test_total_count > freeze_list_min_test_case
     assert (
         freeze_list_test_collision_count / freeze_list_test_total_count
     ) < acceptable_collision_rate_threshold
@@ -48,8 +52,11 @@ def test_freeze_dict(d: Dict[Hashable, Hashable]) -> None:
 
 freeze_dict_test_total_count = 0
 freeze_dict_test_collision_count = 0
+freeze_dict_total_test_case = 500
+freeze_dict_min_test_case = 300
 
 
+@settings(max_examples=freeze_dict_total_test_case)
 @given(
     dictionaries(hashable_types, hashable_types),
     dictionaries(hashable_types, hashable_types),
@@ -68,7 +75,7 @@ def test_freeze_dict_inequality(
 @given(just(None))
 def test_freeze_dict_low_collision_rate(_: None) -> None:
     global freeze_dict_test_total_count, freeze_dict_test_collision_count
-    assert freeze_dict_test_total_count >= 100
+    assert freeze_dict_test_total_count > freeze_dict_min_test_case
     assert (
         freeze_dict_test_collision_count / freeze_dict_test_total_count
     ) < acceptable_collision_rate_threshold
