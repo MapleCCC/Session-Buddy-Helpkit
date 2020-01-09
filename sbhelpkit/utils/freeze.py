@@ -10,16 +10,41 @@ from typing import *
 from .pyobjhash import *
 import itertools
 
-__all__ = ["freeze_dict", "freeze_list", "hash_dict", "hash_list"]
+__all__ = ["freeze", "ihash"]
 
-list_begin_sentinel = object()
-list_end_sentinel = object()
-dict_begin_sentinel = object()
-dict_end_sentinel = object()
+list_sentinel = object()
+dict_sentinel = object()
+
+
+def freeze(item) -> Hashable:
+    if isinstance(item, Hashable):
+        return item
+    elif isinstance(item, list):
+        return freeze_list(item)
+    elif isinstance(item, dict):
+        return freeze_dict(item)
+    else:
+        raise ValueError(f"Cannot freeze unsupported type {type(item)}")
+
+
+def ihash(item) -> int:
+    """
+    ihash is a drop-in replacement for Python's builtin hash function.
+    It is able to hash a broader range of objects.
+    """
+    if isinstance(item, Hashable):
+        return hash(item)
+    elif isinstance(item, list):
+        return hash_list(item)
+    elif isinstance(item, dict):
+        return hash_dict(item)
+    else:
+        raise TypeError(f"Unhashable type {type(item)}")
 
 
 # TODO: Do we want to have no two different lists mapping to a same tuple,
 # or do we want to have no two different objects mapping to a same tuple.
+# if the latter if true, we need to add some sentinel to mixup the hash
 def freeze_list(l: List) -> Tuple:
     """
     This function provides a one-to-one mapping from a list instance
@@ -31,19 +56,7 @@ def freeze_list(l: List) -> Tuple:
 
     If the mapping cannot be found for some lists, a ValueError will be raised.
     """
-    tmp = []
-    tmp.append(list_begin_sentinel)
-    for item in l:
-        if isinstance(item, Hashable):
-            tmp.append(item)
-        elif isinstance(item, list):
-            tmp.append(freeze_list(item))
-        elif isinstance(item, dict):
-            tmp.append(freeze_dict(item))
-        else:
-            raise ValueError(f"Cannot freeze unsupported type {type(item)}")
-    tmp.append(list_end_sentinel)
-    return tuple(tmp)
+    return (list_sentinel,) + tuple(map(freeze, l))
 
 
 def freeze_dict(d: Dict) -> FrozenSet:
@@ -56,39 +69,16 @@ def freeze_dict(d: Dict) -> FrozenSet:
     Two eqaul dicts yield the same tuple.
 
     If the mapping cannot be found for some dicts, a ValueError will be raised.
+
+    Known hash collisions are:
+        False and "" and 0
+        -1 and -2 and -1.0 and -2.0
     """
-
-    def mapper(item):
-        if isinstance(item, Hashable):
-            return item
-        elif isinstance(item, list):
-            return freeze_list(item)
-        elif isinstance(item, dict):
-            return freeze_dict(item)
-        else:
-            raise ValueError(f"Cannot freeze unsupported type {type(item)}")
-
-    return frozenset(
-        itertools.chain(
-            [dict_begin_sentinel], map(mapper, d.items()), [dict_end_sentinel]
-        )
-    )
+    return frozenset(map(freeze, d.items())) | {dict_sentinel}
 
 
 def freeze_dict_using_tuple_method(d: Dict) -> Tuple:
-    tmp = []
-    tmp.append(dict_begin_sentinel)
-    for k, v in sorted(d.items()):
-        if isinstance(v, Hashable):
-            tmp += [k, v]
-        elif isinstance(v, list):
-            tmp += [k, freeze_list(v)]
-        elif isinstance(v, dict):
-            tmp += [k, freeze_dict(v)]
-        else:
-            raise ValueError(f"Cannot freeze unsupported type {type(v)}")
-    tmp.append(dict_end_sentinel)
-    return tuple(tmp)
+    return (dict_sentinel,) + tuple(map(freeze, sorted(d.items())))
 
 
 def hash_list(l: List) -> int:
@@ -97,40 +87,12 @@ def hash_list(l: List) -> int:
 
 
 def hash_list_from_list_elements(elements: Iterable) -> int:
-    def mapper(item) -> int:
-        if isinstance(item, Hashable):
-            return hash(item)
-        elif isinstance(item, list):
-            return hash_list(item)
-        elif isinstance(item, dict):
-            return hash_dict(item)
-        else:
-            raise TypeError("Unhashable")
-
     return hash_tuple_from_hashes_of_elements(
-        itertools.chain(
-            [hash(list_begin_sentinel)],
-            map(mapper, elements),
-            [hash(list_end_sentinel)],
-        )
+        itertools.chain((hash(list_sentinel),), map(ihash, elements))
     )
 
 
 def hash_dict(d: Dict) -> int:
-    def mapper(item) -> int:
-        if isinstance(item, Hashable):
-            return hash(item)
-        elif isinstance(item, list):
-            return hash_list(item)
-        elif isinstance(item, dict):
-            return hash_dict(item)
-        else:
-            raise TypeError("Unhashable")
-
     return hash_frozenset_from_hashes_of_elements(
-        itertools.chain(
-            [hash(dict_begin_sentinel)],
-            map(mapper, d.items()),
-            [hash(dict_end_sentinel)],
-        )
+        itertools.chain(map(ihash, d.items()), (hash(dict_sentinel),))
     )

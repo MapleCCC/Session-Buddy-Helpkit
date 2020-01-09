@@ -3,7 +3,7 @@ from typing import *
 from hypothesis import given, assume
 from hypothesis.strategies import *
 
-from .freeze import *
+from .freeze import freeze_list, freeze_dict, hash_list, hash_dict
 
 hashable_types = none() | booleans() | floats() | text()
 
