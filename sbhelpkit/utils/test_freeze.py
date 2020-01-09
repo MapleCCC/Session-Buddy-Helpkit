@@ -72,3 +72,13 @@ def test_freeze_dict_low_collision_rate(_: None) -> None:
     assert (
         freeze_dict_test_collision_count / freeze_dict_test_total_count
     ) < acceptable_collision_rate_threshold
+
+
+@given(lists(hashable_types))
+def test_hash_list(l: List[Hashable]) -> None:
+    assert hash_list(l) == hash(freeze_list(l))
+
+
+@given(dictionaries(hashable_types, hashable_types))
+def test_hash_dict(d: Dict[Hashable, Hashable]) -> None:
+    assert hash_dict(d) == hash(freeze_dict(d))
