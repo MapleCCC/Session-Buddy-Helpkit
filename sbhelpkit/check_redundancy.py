@@ -1,6 +1,7 @@
 import itertools
 import json
 import os
+import re
 import time
 from collections import namedtuple
 from functools import reduce
@@ -68,11 +69,15 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
         # 1. Construct fingerprint by GUID
         return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
         # 2. Construct fingerprint by recursively freeze dict structure and hash.
-        return frozenset((hash(freeze(sess)) for sess in sesses if sess["type"] != "current"))
+        return frozenset(
+            (hash(freeze(sess)) for sess in sesses if sess["type"] != "current")
+        )
         # 3. Construct fingerprint by using CPython hash algorithm in Python layer, with some accelerate tricks.
         return frozenset(ihash(sess) for sess in sesses if sess["type"] != "current")
         # 4. Construct fingerprint by dump and hash
-        return frozenset((hash(json.dumps(sess)) for sess in sesses if sess["type"] != "current"))
+        return frozenset(
+            (hash(json.dumps(sess)) for sess in sesses if sess["type"] != "current")
+        )
 
         # Speed comparison: 1 > 4 > 2 > 3
 
@@ -82,10 +87,26 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
             filter(lambda x: not x.fingerprint.issubset(meta.fingerprint), sinks),
         )
 
+    @profile
+    def load_file(filepath: str) -> str:
+        with open(filepath, "r", encoding="utf-8-sig") as f:
+            rbuf = f.read()
+            if rbuf.startswith("\ufeff"):
+                rbuf = rbuf.encode("utf-8")[3:].decode("utf-8")
+            return rbuf
+
+    pattern = re.compile(r",\s*\"gid\"\s*:\s*\"([a-zA-Z0-9_]{32})\"\s*,")
+
     disable_lazy_feature()
 
-    jsonobjs = map(load_json_from_file, filepaths)
-    fingerprints = map(extract_fingerprint, jsonobjs)
+    # 1. brutal and fast, though potentially unsafe, regex matching
+    rbufs = map(load_file, filepaths)
+    fingerprints = list((frozenset(re.findall(pattern, rbuf)) for rbuf in rbufs))
+
+    # 2. parse json
+    # jsonobjs = map(load_json_from_file, filepaths)
+    # fingerprints = map(extract_fingerprint, jsonobjs)
+
     filenames = map(os.path.basename, filepaths)
     metas = itertools.starmap(Meta, zip(filenames, fingerprints))
     sorted_metas = sorted(metas, key=lambda x: len(x.fingerprint))
