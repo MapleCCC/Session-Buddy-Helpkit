@@ -96,7 +96,8 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
                 return rbuf[1:]
             return rbuf
 
-    pattern = re.compile(r",\s*\"gid\"\s*:\s*\"([a-zA-Z0-9_]{32})\"\s*,")
+    # pattern = re.compile(r",\s*\"gid\"\s*:\s*\"([a-zA-Z0-9_]{32})\"\s*,")
+    pattern = re.compile(r"\"gid\": \"([a-zA-Z0-9_]{32})\"")
 
     disable_lazy_feature()
 
