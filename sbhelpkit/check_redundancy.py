@@ -139,16 +139,20 @@ def check_redundancy_functional_style(filepaths: List[str]) -> None:
             [meta],
         )
 
-    metas = (
-        Meta(
-            filename=os.path.basename(filepath),
-            fingerprint=extract_fingerprint(filepath),
-        )
-        for filepath in filepaths
+    sinks = reduce(
+        calculate_sinks,
+        sorted(
+            (
+                Meta(
+                    filename=os.path.basename(filepath),
+                    fingerprint=extract_fingerprint(filepath),
+                )
+                for filepath in filepaths
+            ),
+            key=lambda meta: len(meta.fingerprint),
+        ),
+        [],
     )
-
-    sorted_metas = sorted(metas, key=lambda meta: len(meta.fingerprint))
-    sinks = reduce(calculate_sinks, sorted_metas, [])
 
     print(f"Scanned {len(filepaths)} files")
     print(f"{len(list(sinks))} of them are sinks")
