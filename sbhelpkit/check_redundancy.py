@@ -72,20 +72,12 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
             filter(lambda x: not x.fingerprint.issubset(meta.fingerprint), sinks),
         )
 
-    sinks = reduce(
-        reducer,
-        sorted(
-            itertools.starmap(
-                Meta,
-                zip(
-                    map(os.path.basename, filepaths),
-                    map(extract_fingerprint, map(load_json_from_file, filepaths)),
-                ),
-            ),
-            key=lambda x: len(x.fingerprint),
-        ),
-        [],
-    )
+    jsonobjs = map(load_json_from_file, filepaths)
+    fingerprints = map(extract_fingerprint, jsonobjs)
+    filenames = map(os.path.basename, filepaths)
+    metas = itertools.starmap(Meta, zip(filenames, fingerprints))
+    sorted_metas = sorted(metas, key=lambda x: len(x.fingerprint))
+    sinks: Iterable[Meta] = reduce(reducer, sorted_metas, [])
 
     print(f"{len(filepaths)} files scanned")
     print(f"{len(list(sinks))} sinks found")
