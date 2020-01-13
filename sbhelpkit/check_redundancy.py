@@ -89,10 +89,10 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
     filenames = map(os.path.basename, filepaths)
     metas = itertools.starmap(Meta, zip(filenames, fingerprints))
     sorted_metas = sorted(metas, key=lambda x: len(x.fingerprint))
-    sinks: Iterable[Meta] = reduce(reducer, sorted_metas, [])
+    sinks = list(reduce(reducer, sorted_metas, []))
 
     print(f"{len(filepaths)} files scanned")
-    print(f"{len(list(sinks))} sinks found")
+    print(f"{len(sinks)} sinks found")
     print(", ".join((sink[0] for sink in sinks)))
 
 
