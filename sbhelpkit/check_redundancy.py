@@ -90,11 +90,17 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
     @profile
     def load_file(filepath: str) -> str:
         with open(filepath, "r", encoding="utf-8-sig") as f:
-            rbuf = f.read()
-            if rbuf.startswith("\ufeff"):
-                # rbuf = rbuf.encode("utf-8")[3:].decode("utf-8")
-                return rbuf[1:]
-            return rbuf
+            # rbuf = f.read()
+            # if rbuf.startswith("\ufeff"):
+            #     # rbuf = rbuf.encode("utf-8")[3:].decode("utf-8")
+            #     return rbuf[1:]
+            # return rbuf
+            line = f.readline()
+            if line.startswith("\ufeff"):
+                yield line[1:]
+            yield line
+            for line in f.readlines():
+                yield line
 
     # pattern = re.compile(r",\s*\"gid\"\s*:\s*\"([a-zA-Z0-9_]{32})\"\s*,")
     pattern = re.compile(r"\"gid\": \"([a-zA-Z0-9_]{32})\"")
