@@ -64,7 +64,16 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
 
     def extract_fingerprint(jsonobj: JSONObject) -> Fingerprint:
         sesses = jsonobj["sessions"]
+        # 1. Construct fingerprint by GUID
         return frozenset((sess["gid"] for sess in sesses if sess["type"] != "current"))
+        # 2. Construct fingerprint by recursively freeze dict structure and hash.
+        return frozenset((hash(freeze(sess)) for sess in sesses if sess["type"] != "current"))
+        # 3. Construct fingerprint by using CPython hash algorithm in Python layer, with some accelerate tricks.
+        return frozenset(ihash(sess) for sess in sesses if sess["type"] != "current")
+        # 4. Construct fingerprint by dump and hash
+        return frozenset((hash(json.dumps(sess)) for sess in sesses if sess["type"] != "current"))
+
+        # Speed comparison: 1 > 4 > 2 > 3
 
     def reducer(sinks: Iterable[Meta], meta: Meta) -> Iterable[Meta]:
         return itertools.chain(
