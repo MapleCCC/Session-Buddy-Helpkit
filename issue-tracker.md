@@ -8,3 +8,6 @@
 - Performance profiling tool. Find bottleneck. And optimize techniques.
 - lazy-object-proxy
 - freezedict library.
+- Try to profile and investigate where the performance hotspot locates, is it parsing or hashing?
+- Wrap academic-level state-of-art efficient third-party JSON parsing library to be C extension.
+- Use memoisation to accelerate hashing of repeated strcutures. Especially helpful info is that FrozenSet hash algorithm is mainly about serial XOR set members. Utilizing XOR operator's commutativity and associativity, we can make some clever optimization here.
