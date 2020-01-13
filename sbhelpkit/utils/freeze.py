@@ -14,6 +14,7 @@ __all__ = ["freeze", "ihash"]
 
 list_sentinel = object()
 dict_sentinel = object()
+order_digest_sentinel = object()
 
 
 def freeze(item) -> Hashable:
@@ -45,7 +46,7 @@ def ihash(item) -> int:
 # TODO: Do we want to have no two different lists mapping to a same tuple,
 # or do we want to have no two different objects mapping to a same tuple.
 # if the latter if true, we need to add some sentinel to mixup the hash
-def freeze_list(l: List) -> Tuple:
+def freeze_list(l: List) -> FrozenSet:
     """
     This function provides a one-to-one mapping from a list instance
     to a tuple instance. The mapped tuple is guaranteed to contain only hashable
@@ -56,7 +57,15 @@ def freeze_list(l: List) -> Tuple:
 
     If the mapping cannot be found for some lists, a ValueError will be raised.
     """
-    return (list_sentinel,) + tuple(map(freeze, l))
+    def helper(l: List) -> Generator:
+        yield list_sentinel
+        order_digest = []
+        for item in l:
+            order_digest.append(ihash(item))
+            yield freeze(item)
+        yield tuple(order_digest) + (order_digest_sentinel,)
+
+    return frozenset(helper(l))
 
 
 def freeze_dict(d: Dict) -> FrozenSet:
@@ -82,14 +91,17 @@ def freeze_dict_using_tuple_method(d: Dict) -> Tuple:
 
 
 def hash_list(l: List) -> int:
-    # use CPython's tuple hash algorithm on the fly, to save space.
-    return hash_list_from_list_elements(iter(l))
+    def helper(l: List) -> Generator:
+        yield hash(list_sentinel)
+        order_digest_hasher = TupleHasher(len(l)+1)
+        for item in l:
+            h = ihash(item)
+            order_digest_hasher.update_by_data_hash(h)
+            yield h
+        order_digest_hasher.update(order_digest_sentinel)
+        yield order_digest_hasher.digest()
 
-
-def hash_list_from_list_elements(elements: Iterable) -> int:
-    return hash_tuple_from_hashes_of_elements(
-        itertools.chain((hash(list_sentinel),), map(ihash, elements))
-    )
+    return hash_frozenset_from_hashes_of_elements(helper(l))
 
 
 def hash_dict(d: Dict) -> int:
