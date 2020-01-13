@@ -40,7 +40,7 @@ dict_sentinel = object()
 Immutable = Hashable
 
 
-def freeze(item) -> Immutable:
+def freeze(item: Any) -> Immutable:
     if isinstance(item, Hashable):
         # WARNING: A great gotchar here is that passing isinstance(x, Hashable) test
         # doesn't necessarily imply that hash(x) won't fail.
@@ -61,7 +61,7 @@ def freeze(item) -> Immutable:
         raise ValueError(f"Cannot freeze unsupported type {type(item)}")
 
 
-def ihash(item) -> int:
+def ihash(item: Any) -> int:
     """
     ihash is a drop-in replacement for Python's builtin hash function.
     It is able to hash a broader range of objects.

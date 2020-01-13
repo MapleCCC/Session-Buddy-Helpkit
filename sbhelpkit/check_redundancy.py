@@ -21,7 +21,7 @@ except NameError:
 Digest = namedtuple("Digest", ["filename", "fingerprint"])
 
 
-def load_json_from_file(filepath: str) -> Dict:
+def load_json_from_file(filepath: str) -> JSONType:
     try:
         with open(filepath, "r", encoding="utf-8-sig") as f:
             rbuf = f.read()
@@ -161,7 +161,7 @@ def check_redundancy_imperative_style(filepaths: List[str]) -> None:
 def check_redundancy_functional_style(filepaths: List[str]) -> None:
     Meta = NamedTuple("Digest", [("filename", str), ("fingerprint", frozenset)])
 
-    def load_json_from_file(filepath: str) -> Dict:
+    def load_json_from_file(filepath: str) -> JSONType:
         try:
             with open(filepath, "r", encoding="utf-8-sig") as f:
                 rbuf = f.read()
