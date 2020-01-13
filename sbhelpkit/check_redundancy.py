@@ -9,6 +9,7 @@ from typing import *
 
 from .utils.extra_typings import *
 from .utils.freeze import *
+from .utils.delazify import disable_lazy_feature
 
 try:
     profile
@@ -80,6 +81,8 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
             (meta,),
             filter(lambda x: not x.fingerprint.issubset(meta.fingerprint), sinks),
         )
+
+    disable_lazy_feature()
 
     jsonobjs = map(load_json_from_file, filepaths)
     fingerprints = map(extract_fingerprint, jsonobjs)
