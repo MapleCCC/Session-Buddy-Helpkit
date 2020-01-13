@@ -8,7 +8,7 @@ from json import JSONDecodeError
 from typing import *
 
 from .utils.extra_typings import *
-from .utils.freeze import freeze_dict
+from .utils.freeze import *
 
 try:
     profile
@@ -38,7 +38,7 @@ def extract_digests(filepaths: List[str]) -> List[Digest]:
     for filepath in filepaths:
         json_obj = load_json_from_file(filepath)
         sessions = json_obj["sessions"]
-        fingerprint = frozenset(hash(hashablize_dict(session)) for session in sessions)
+        fingerprint = frozenset((hash(freeze(session)) for session in sessions))
         digests.append(
             Digest(filename=os.path.basename(filepath), fingerprint=fingerprint)
         )
@@ -76,11 +76,12 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
     fingerprints = map(extract_fingerprint, jsonobjs)
     filenames = map(os.path.basename, filepaths)
     metas = itertools.starmap(Meta, zip(filenames, fingerprints))
-    metas = sorted(metas, key=lambda x: len(x.fingerprint))
+    sorted_metas = sorted(metas, key=lambda x: len(x.fingerprint))
     sinks: Iterable[Meta] = reduce(reducer, sorted_metas, [])
 
     print(f"{len(filepaths)} files scanned")
     print(f"{len(list(sinks))} sinks found")
+    print(", ".join((sink[0] for sink in sinks)))
 
 
 def check_redundancy_imperative_style(filepaths: List[str]) -> None:
@@ -128,9 +129,7 @@ def check_redundancy_functional_style(filepaths: List[str]) -> None:
     def extract_fingerprint(filepath: str) -> FrozenSet[int]:
         json_obj = load_json_from_file(filepath)
         sessions = json_obj["sessions"]
-        return frozenset(
-            hash(freeze_dict(s)) for s in sessions if s["type"] != "current"
-        )
+        return frozenset(hash(freeze(s)) for s in sessions if s["type"] != "current")
 
     def calculate_sinks(sinks: Iterable[Meta], meta: Meta) -> Iterable[Meta]:
         return itertools.chain(

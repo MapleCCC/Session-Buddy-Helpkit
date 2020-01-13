@@ -13,8 +13,15 @@ if sys.version_info < (3, 7):
 hashable_types = none() | booleans() | floats() | text()
 
 
+# TODO: test on nested tuples
+# TODO: test raise exception when encountering unhashable input
+
+# hypothesis' strategies for generating tuples is different from that of lists.
+# we are going to use a trick here, first generate lists than convert to tuples.
+
+
 @given(lists(hashable_types))
-def test_hash_tuple_compliance(l: List) -> None:
+def test_hash_tuple_regression(l: List) -> None:
     t = tuple(l)
     assert hash_tuple(t) == hash(t)
 

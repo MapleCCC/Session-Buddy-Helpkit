@@ -20,6 +20,13 @@ from .pyobjhash import *
 
 __all__ = ["freeze", "ihash"]
 
+
+# TODO: consdier remove sentinel, seem to be not needed
+# TODO: consult functools.lru_cache implementation
+# TODO: see xxHash, SipHash, FNV hash, Murmur, SHA.
+# TODO: add memoisation to accelerate hashing for those nested objects taht contain many
+# repeated sub-componenets.
+
 # sentinel pattern
 # these objects are immutable global singletons within a session of Python interpreter
 # which implies that you should not account on them to produce some stable
@@ -27,6 +34,7 @@ __all__ = ["freeze", "ihash"]
 # If you want to have persisitent hash result, try hashlib.
 list_sentinel = object()
 dict_sentinel = object()
+
 
 # hashable implies immutable. Immutable is a form of freeze
 Immutable = Hashable

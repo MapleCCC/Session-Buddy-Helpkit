@@ -1,1 +1,10 @@
 - Reference BeautifulSoup interface and/or implementation.
+- Add cache to boost performance.
+- Extend with C++ module for performance improvement, both time and space. Could be C, C++, or Rust.
+- Write tool for lazy io/load and lazy parse large JSON file.
+- Consider use database field knowledge.
+- Use more advanced data structure.
+- Asynchronous. Accelerate. Multithreaded.
+- Performance profiling tool. Find bottleneck. And optimize techniques.
+- lazy-object-proxy
+- freezedict library.

@@ -13,6 +13,7 @@ if sys.version_info < (3, 7):
 hashable_types = none() | booleans() | floats() | text()
 
 # TODO: test on nested frozenset
+# TODO: test raise exception when encountering unhashable input
 
 
 @given(frozensets(hashable_types))

@@ -19,7 +19,5 @@ setuptools.setup(
     ],
     python_requires=">=3.6",
     install_requires=open("requirements.txt", "r").read().splitlines(),
-    entry_points={
-        "console_scripts": ["sbhelpkit=sbhelpkit.__main__:main",]
-    },
+    entry_points={"console_scripts": ["sbhelpkit=sbhelpkit.__main__:main",]},
 )

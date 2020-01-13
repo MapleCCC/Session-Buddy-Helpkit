@@ -16,9 +16,11 @@ hashable_types = none() | booleans() | floats() | text()
 # TODO: decide a collision rate as threshold for being acceptable.
 acceptable_collision_rate_threshold = 0.03
 
+# TODO: test over nestd lists and nested dicts
+# TODO: test raise exception when encountering unhashable input
 
 @given(lists(hashable_types))
-def test_freeze_list(l: List[Hashable]) -> None:
+def test_freeze_list_regression(l: List[Hashable]) -> None:
     assert freeze_list(l) == freeze_list(l)
     assert hash(freeze_list(l)) == hash(freeze_list(l))
 
@@ -54,7 +56,7 @@ def test_freeze_list_low_collision_rate(_: None) -> None:
 
 
 @given(dictionaries(hashable_types, hashable_types))
-def test_freeze_dict(d: Dict[Hashable, Hashable]) -> None:
+def test_freeze_dict_regression(d: Dict[Hashable, Hashable]) -> None:
     assert freeze_dict(d) == freeze_dict(d)
     assert hash(freeze_dict(d)) == hash(freeze_dict(d))
 
@@ -94,10 +96,10 @@ def test_freeze_dict_low_collision_rate(_: None) -> None:
 
 
 @given(lists(hashable_types))
-def test_hash_list(l: List[Hashable]) -> None:
+def test_hash_list_regression(l: List[Hashable]) -> None:
     assert hash_list(l) == hash(freeze_list(l))
 
 
 @given(dictionaries(hashable_types, hashable_types))
-def test_hash_dict(d: Dict[Hashable, Hashable]) -> None:
+def test_hash_dict_regression(d: Dict[Hashable, Hashable]) -> None:
     assert hash_dict(d) == hash(freeze_dict(d))

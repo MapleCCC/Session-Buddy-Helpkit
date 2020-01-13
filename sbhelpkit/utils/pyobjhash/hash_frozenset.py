@@ -2,6 +2,13 @@ from ctypes import *
 from functools import reduce
 from typing import *
 
+# line_profiler and kernprof
+try:
+    profile
+except NameError:
+    profile = lambda f: f
+
+
 __all__ = [
     "hash_frozenset",
     "hash_frozenset_from_elements",
@@ -29,10 +36,11 @@ def hash_frozenset_from_elements(elements: Iterable) -> int:
         raise TypeError("Unhashble")
 
 
+# @profile
 def hash_frozenset_from_hashes_of_elements(hashes: Iterable[int]) -> int:
     # TODO: in the C code we have to pass Py_hash_t to _shuffule_bits's argument which
     # is of type Py_uhash_t. They are incompatible and no explicit or implicit type cast
-    # show up in the C code. What happens here?
+    # show up in the C code. What happens here? Is the conversion intended behaviour?
     def _shuffule_bits(h: Py_uhash_t) -> Py_uhash_t:
         # For increase the bit dispersion for closely spaced hash values.
         # Reference: https://github.com/python/cpython/blob/v3.7.0/Objects/setobject.c#L752
@@ -45,9 +53,13 @@ def hash_frozenset_from_hashes_of_elements(hashes: Iterable[int]) -> int:
     def xor(x: Py_uhash_t, y: Py_uhash_t) -> Py_uhash_t:
         return Py_uhash_t(x.value ^ y.value)
 
-    hashes = (Py_hash_t(hash(e)) for e in elements)
-    dispersed_hashes = map(_shuffule_bits, hashes)
+    cast_hashes = (Py_hash_t(h) for h in hashes)
+    dispersed_hashes = map(_shuffule_bits, cast_hashes)
     h, count = reduce(reducer, dispersed_hashes, (Py_uhash_t(0), 0))
+    # h, count = Py_uhash_t(0), 0
+    # for dh in dispersed_hashes:
+    #     h = Py_uhash_t(h.value ^ dh.value)
+    #     count += 1
 
     h.value ^= (Py_uhash_t(count).value + 1) * 1927868237
 
@@ -93,6 +105,9 @@ class FrozenSetHasher:
         return Py_hash_t(h.value).value
 
     def update_by_data_hash(self, h: int) -> None:
+        # TODO: in the C code we have to pass Py_hash_t to _shuffule_bits's argument which
+        # is of type Py_uhash_t. They are incompatible and no explicit or implicit type cast
+        # show up in the C code. What happens here? Is the conversion intended behaviour?
         self.h.value = self.h.value ^ self._shuffle_bits(Py_hash_t(h)).value
         self.counter += 1
 

@@ -3,6 +3,7 @@ from ctypes import *
 from functools import reduce
 from typing import *
 
+
 __all__ = [
     "hash_tuple",
     "hash_tuple_from_stream_of_tuple_elements",
@@ -61,7 +62,9 @@ def hash_tuple_from_hashes_of_elements(element_hashes: Iterable[int]) -> int:
         return acc, mult, counter
 
     # we have to forfeit lazy evaluation at this line, because CPython's tupple
-    # hash algorithm require tuple size to start.
+    # hash algorithm requires knowledge about tuple's size to get started.
+    # That means we can't have stream and lazyness, the functional stuff.
+    # Though for average case the space performance should not suffer too much.
     # TODO: think of other ways to conquer it.
     # Perhaps try hash algoirhtms other than xxHash?
     # Or investigate whether we can alter xxHash to a specialized version that doesn't
@@ -84,6 +87,8 @@ class TupleHasher:
         self.mult = Py_uhash_t(0xF4243)
         self.counter = 0
         self.len = Py_ssize_t(length)
+
+    __slots__ = ('acc', 'mult', 'counter', 'len')
 
     def update(self, data) -> None:
         try:
