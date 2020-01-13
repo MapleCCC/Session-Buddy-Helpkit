@@ -14,7 +14,6 @@ __all__ = ["freeze", "ihash"]
 
 list_sentinel = object()
 dict_sentinel = object()
-order_digest_sentinel = object()
 
 
 def freeze(item) -> Hashable:
@@ -57,13 +56,11 @@ def freeze_list(l: List) -> FrozenSet:
 
     If the mapping cannot be found for some lists, a ValueError will be raised.
     """
+
     def helper(l: List) -> Generator:
         yield list_sentinel
-        order_digest = []
-        for item in l:
-            order_digest.append(ihash(item))
-            yield freeze(item)
-        yield tuple(order_digest) + (order_digest_sentinel,)
+        for i, item in enumerate(l):
+            yield (freeze(item), i)
 
     return frozenset(helper(l))
 
@@ -93,13 +90,8 @@ def freeze_dict_using_tuple_method(d: Dict) -> Tuple:
 def hash_list(l: List) -> int:
     def helper(l: List) -> Generator:
         yield hash(list_sentinel)
-        order_digest_hasher = TupleHasher(len(l)+1)
-        for item in l:
-            h = ihash(item)
-            order_digest_hasher.update_by_data_hash(h)
-            yield h
-        order_digest_hasher.update(order_digest_sentinel)
-        yield order_digest_hasher.digest()
+        for i, item in enumerate(l):
+            yield hash_tuple_from_hashes_of_elements((ihash(item), hash(i)))
 
     return hash_frozenset_from_hashes_of_elements(helper(l))
 
