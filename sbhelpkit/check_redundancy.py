@@ -92,7 +92,8 @@ def check_redundancy_by_guid(filepaths: List[str]) -> None:
         with open(filepath, "r", encoding="utf-8-sig") as f:
             rbuf = f.read()
             if rbuf.startswith("\ufeff"):
-                rbuf = rbuf.encode("utf-8")[3:].decode("utf-8")
+                # rbuf = rbuf.encode("utf-8")[3:].decode("utf-8")
+                return rbuf[1:]
             return rbuf
 
     pattern = re.compile(r",\s*\"gid\"\s*:\s*\"([a-zA-Z0-9_]{32})\"\s*,")
